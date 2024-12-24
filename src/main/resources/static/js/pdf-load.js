@@ -36,16 +36,21 @@ document.getElementById('next').addEventListener('click', () => {
 	let isValidPage = false;
 	const isOwnerValue = isOwner.textContent.trim();
 	if (isOwnerValue == "Yes") {
-		isValidPage = true;
+		if (currentPDF.currentPage < currentPDF.countOfPages) {
+			isValidPage = true;
+		}
+		if (isValidPage) {
+			currentPDF.currentPage += 1;
+			renderCurrentPage();
+		}
 	} else {
 		isValidPage = currentPDF.currentPage < currentPDF.countOfPages * 0.1;
-	}
-
-	if (isValidPage) {
-		currentPDF.currentPage += 1;
-		renderCurrentPage();
-	} else {
-		alert("You need to download this document to view all")
+		if (isValidPage) {
+			currentPDF.currentPage += 1;
+			renderCurrentPage();
+		} else {
+			alert("You need to download this document to view all")
+		}
 	}
 });
 
