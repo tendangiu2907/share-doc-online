@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html layout:decorate="~{template}">
+
+<head>
+    <title>Your document</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <section class="section">
+        <article>
+            <div class="box box1">
+                <label class="large-label px-3 mb-3">Your document</label>
+                <div class="row header-row" style="margin-left: 10px;">
+                    <div class="col-md-4 text-left">
+                        <strong>Document Name</strong>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <strong>Uploader Email</strong>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <strong>Author Name</strong>
+                    </div>
+                </div>
+                <th:block th:each="document:${document}">
+                    <a th:href="@{/document-detail/{id}(id=${document.id})}"
+                       style="text-decoration: none; color: black">
+                        <div onclick="window.location='/document-detail/{id}(id=${document.id})'" class="job-row">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="job-title text-left">
+                                        [[${document.originalFileName}]]
+                                    </label>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <label th:text="${document.uploader.email}">
+                                        Author email</label>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <label th:text="@{${document.uploader.username}}">Author Name</label>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </th:block>
+            </div>
+        </article>
+    </section>
+</div>
+</body>
+
+</html>

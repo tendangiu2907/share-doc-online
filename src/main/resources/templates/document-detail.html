@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html layout:decorate="~{template}">
+
+<head>
+    <title>Document Detail</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+        integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ=="
+        crossorigin="*" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/preview-pdf.css}" />
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div id="loadingOverlay" class="hidden">
+            <div class="spinner"></div>
+            <p>Loading, please wait...</p>
+        </div>
+        <label class="isOwner hidden">
+            [[${isOwner}]]
+        </label>
+        <section class="section">
+            <article>
+                <div class="box1">
+                    <div class="row header-row" style="margin-left: 10px;">
+                        <div class="col text-left">
+                            <label class="label-title">Document Name:</label>
+                            <strong th:text="${document.originalFileName}">Sample Document</strong>
+                        </div>
+                        <div class="col text-center">
+                            <label class="label-title">Uploader Email:</label>
+                            <strong th:text="${document.uploader.email}">example@example.com</strong>
+                        </div>
+                        <div class="col text-right">
+                            <label class="label-title">Author Name:</label>
+                            <strong th:text="${document.uploader.username}">Author Name</strong>
+                        </div>
+                        <div class="col text-right">
+                            <button class="btn btn-primary" id="downloadButton" th:data-document-id="${document.id}">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+        <main>
+            <canvas class="pdf-viewer hidden"></canvas>
+        </main>
+        <footer>
+            <ul>
+                <li class="pagination">
+                    <button id="previous"><i class="fas fa-arrow-alt-circle-left"></i></button>
+                    <span id="current_page">0 of 0</span>
+                    <button id="next"><i class="fas fa-arrow-alt-circle-right"></i></button>
+                </li>
+                <li>
+                    <span id="zoomValue">100%</span>
+                    <input type="range" id="zoom" name="cowbell" min="100" max="300" value="100" step="50" disabled>
+                </li>
+            </ul>
+        </footer>
+        <script type="text/javascript" th:src="@{/js/pdf-load.js}"></script>
+    </div>
+</body>
+
+</html>

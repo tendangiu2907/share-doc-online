@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/css/styles.css}" />
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} " />
+    <link th:rel="stylesheet" th:href="@{/webjars/font-awesome/css/all.css}" />
+
+</head>
+
+<body>
+    <header class="navbar navbar-expand-lg navbar-dark">
+        <label class="mt-2 ms-5 font-weight-bold h5"><a th:href="@{/dashboard/}">Sharing Doc</a><span
+                class="logo_com font-weight-bold h5" style="color: white">
+                .com</span></label>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02"
+            aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarToggler">
+            <ul class="navbar-nav m-auto mt-2 mt-lg-0">
+
+                <li class="nav-item active">
+                    <a class="nav-link" th:href="@{/dashboard/}"><i class="fas fa-search"></i>Search for Document</a>
+                </li>
+                <li class="nav-item ">
+                    <a class="nav-link" th:href="@{/upload-document}"><i
+                            class="fa-solid fa-file-circle-plus"></i>Upload
+                        new document</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" th:href="@{/view-your-documents}"> <i class="fa-solid fa-eye"></i>View Your Documents</a>
+                </li>
+            </ul>
+            <label th:if="${username != null}" th:text="${username}" class="nav-item nav-link px-2 me-3">
+            </label>
+            <button class="myBtn-light me-5" onclick="window.location.href='/logout'">Logout</button>
+        </div>
+    </header>
+
+    <main layout:fragment="content">
+        <!-- Nội dung sẽ được kế thừa ở đây -->
+    </main>
+
+    <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</body>
+
+</html>

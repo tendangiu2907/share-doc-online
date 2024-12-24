@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html layout:decorate="~{template}">
+
+<head>
+    <title>Add Document</title>
+</head>
+
+
+<body>
+    <div layout:fragment="content">
+        <section class="section form-container">
+            <h2 class="section-title">Add document</h2>
+            <form th:action="@{/add-new-document}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="documentName" class="form-label">Document name</label>
+                    <input type="text" id="documentName" name="documentName" class="form-input"
+                        placeholder="Document name" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="form-label">Document category</label>
+                    <select id="category" name="categoryId" class="form-input basic_select">
+                        <option value="">-- Choose document category --</option>
+                        <option th:each="category : ${documentCategories}" th:value="${category.getId()}"
+                            th:text="${category.getDocumentCategoryName()}">
+                        </option>
+                    </select>
+                    <input type="text" id="newCategory" name="newDocumentCategoryName" class="form-input"
+                        placeholder="Or input new one" />
+                </div>
+
+                <div class="form-group">
+                    <div id="uploadProgressContainer" style="display: none; margin-top: 10px;">
+                        <progress id="uploadProgress" value="0" max="100" style="width: 100%;"></progress>
+                        <small id="uploadStatus" style="display: block; text-align: center;">Đang tải lên...</small>
+                    </div>
+                    <div class="wrapper">
+                        <label for="documentFile" class="form-label">Upload document</label>
+                        <br>
+                        <small>Only allow .doc, .docx, .pdf and file size as least 1MB.</small>
+                        <div class="custom-form">
+                            <input class="file-input" type="file" name="file" hidden>
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Browse File to Upload</p>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="documentUrl" name="documentUrl" />
+                    <input type="hidden" id="fileSize" name="fileSize" />
+                    
+                    <section class="uploaded-area"></section>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn-sec btn-red form-button">Upload</button>
+                </div>
+            </form>
+        </section>
+        <script type="text/javascript" th:src="@{/js/upload-document.js}"></script>
+    </div>
+</body>
+
+</html>
