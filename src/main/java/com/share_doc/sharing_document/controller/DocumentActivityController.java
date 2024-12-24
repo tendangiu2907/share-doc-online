@@ -108,7 +108,7 @@ public class DocumentActivityController {
 
     fileMetadataService.addNew(document);
 
-    return "upload-document";
+    return "redirect:/upload-document";
   }
 
   @PostMapping("/upload-to-storage-account")
