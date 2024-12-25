@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html layout:decorate="~{template}">
+
+<head>
+    <title>Who downloaded your documents</title>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <section class="section">
+        <article>
+            <div class="box box1">
+                <label class="large-label px-3 mb-3">Who downloaded your documents</label>
+                <div class="row header-row" style="margin-left: 10px;">
+                    <div class="col-md-6 text-left">
+                        <strong>Document Name</strong>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <strong>Download Count</strong>
+                    </div>
+                </div>
+                <th:block th:each="doc : ${whoDownloadedYourDocs}">
+                    <div class="job-row">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="job-title text-left" th:text="${doc.fileName}"></label>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <a href="#" class="btn btn-link"
+                                   th:data-downloaders="${doc.downloaders}"
+                                   th:data-file-name="${doc.fileName}"
+                                   onclick="showDownloadersModal(this)">
+                                    <span th:text="${#lists.size(doc.downloaders)}"></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+        </article>
+    </section>
+    <!-- Modal -->
+    <div class="modal fade" id="downloadersModal" tabindex="-1" aria-labelledby="downloadersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="downloadersModalLabel">Downloaders Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5 id="modalFileName"></h5>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Username</th>
+                        </tr>
+                        </thead>
+                        <tbody id="downloadersTable">
+                        <!-- Content will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDownloadersModal(element) {
+            // Lấy giá trị JSON từ thuộc tính data-downloaders
+            const downloadersJson = $(element).attr('data-downloaders');
+
+            // Chuyển đổi từ JSON string thành mảng JavaScript
+            const downloaders = JSON.parse(downloadersJson);
+            const fileName = $(element).data('file-name');
+
+            // Hiển thị tên file trong modal
+            $('#modalFileName').text(`Downloaders for: ${fileName}`);
+            $('#downloadersTable').empty();
+
+            // Lặp qua danh sách downloader để hiển thị trong bảng
+            downloaders.forEach(downloader => {
+                $('#downloadersTable').append(`
+            <tr>
+                <td>${downloader.email}</td>
+                <td>${downloader.username}</td>
+            </tr>
+        `);
+            });
+
+            // Hiển thị modal
+            $('#downloadersModal').modal('show');
+        }
+
+    </script>
+</div>
+
+
+</body>
+
+</html>
