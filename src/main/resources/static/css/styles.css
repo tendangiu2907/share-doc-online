@@ -190,9 +190,9 @@ label.nav-item {
   display: inline-block;
   margin-bottom: 0;
 }
-ul.navbar-nav li.nav-item a {
-  color: white !important;
-}
+/*ul.navbar-nav li.nav-item a {*/
+/*  color: white;*/
+/*}*/
 ul.navbar-nav li.nav-item.active a {
   color: #fb4f14 !important;
 }
@@ -202,6 +202,19 @@ ul.navbar-nav li.nav-item.active a {
 a.nav-link > i {
   margin-right: 8px;
   margin-left: 15px;
+}
+.nav-item.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li a {
+  color: #333;
+  padding: 10px 15px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.dropdown-menu li a:hover {
+  background-color: #f0f0f0;
+  color: #007bff;
 }
 
 section.section {
@@ -669,4 +682,41 @@ section .details span {
 
 .btn-delete-uploaded-doc:hover {
   
+}
+
+
+/* CSS cho btn-link */
+.btn-link {
+  position: relative;
+  color: #007bff;
+  font-weight: bold;
+  text-decoration: none;
+  margin-top: -5px; /* Nâng lên một chút */
+}
+
+/* Thêm màu nền cho btn-link */
+.btn-link:hover {
+  color: #0056b3; /* Màu khi hover */
+}
+
+/* Tooltip */
+.btn-link:hover::after {
+  content: 'Show detail';
+  position: absolute;
+  top: -25px; /* Đưa tooltip lên phía trên */
+  right: 0; /* Đặt tooltip về bên phải */
+  transform: translateX(100%); /* Dịch chuyển tooltip sang phải */
+  background-color: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0.8;
+  visibility: visible;
+}
+
+/* Ẩn tooltip khi không hover */
+.btn-link::after {
+  visibility: hidden;
 }

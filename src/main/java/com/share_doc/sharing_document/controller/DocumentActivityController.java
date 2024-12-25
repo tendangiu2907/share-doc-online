@@ -3,21 +3,23 @@ package com.share_doc.sharing_document.controller;
 import com.share_doc.sharing_document.client.documentstorage.DocumentStorageClient;
 import com.share_doc.sharing_document.dto.Result;
 import com.share_doc.sharing_document.dto.UploadDocumentResult;
+import com.share_doc.sharing_document.dto.WhoDownloadedYourDoc;
 import com.share_doc.sharing_document.entity.DocumentCategory;
+import com.share_doc.sharing_document.entity.DownloadHistory;
 import com.share_doc.sharing_document.entity.FileMetadata;
 import com.share_doc.sharing_document.entity.User;
 import com.share_doc.sharing_document.services.DocumentCategoryService;
+import com.share_doc.sharing_document.services.DownloadHistoryService;
 import com.share_doc.sharing_document.services.FileMetadataService;
 import com.share_doc.sharing_document.services.UserService;
 import com.share_doc.sharing_document.util.CustomUserDetails;
-
-import java.io.ByteArrayOutputStream;
+import com.share_doc.sharing_document.util.PdfRender;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-
-import com.share_doc.sharing_document.util.PdfRender;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,17 +40,20 @@ public class DocumentActivityController {
   private final DocumentCategoryService documentCategoryService;
   private final UserService userService;
   private final DocumentStorageClient documentStorageClient;
+  private final DownloadHistoryService downloadHistoryService;
 
   @Autowired
   public DocumentActivityController(
       FileMetadataService fileMetadataService,
       DocumentCategoryService documentCategoryService,
       UserService userService,
-      DocumentStorageClient documentStorageClient) {
+      DocumentStorageClient documentStorageClient,
+      DownloadHistoryService downloadHistoryService) {
     this.fileMetadataService = fileMetadataService;
     this.documentCategoryService = documentCategoryService;
     this.userService = userService;
     this.documentStorageClient = documentStorageClient;
+    this.downloadHistoryService = downloadHistoryService;
   }
 
   @GetMapping("/dashboard/")
@@ -113,7 +118,7 @@ public class DocumentActivityController {
 
   @PostMapping("/upload-to-storage-account")
   public ResponseEntity<Result> uploadToStorageAccount( // update convert to word later, use
-          @RequestParam(name = "documentFile") MultipartFile documentFile) throws Exception {
+      @RequestParam(name = "documentFile") MultipartFile documentFile) throws Exception {
     try {
       // Kiểm tra định dạng file
       String fileName = documentFile.getOriginalFilename();
@@ -136,15 +141,17 @@ public class DocumentActivityController {
         inputStream = documentFile.getInputStream();
       }
 
-      UploadDocumentResult uploadDocumentResult = documentStorageClient.uploadDocument(fileName, inputStream, documentFile.getSize());
+      UploadDocumentResult uploadDocumentResult =
+          documentStorageClient.uploadDocument(fileName, inputStream, documentFile.getSize());
 
       return new ResponseEntity<>(
-              new Result(true, "Upload to storage account succeeded", uploadDocumentResult),
-              HttpStatus.OK);
+          new Result(true, "Upload to storage account succeeded", uploadDocumentResult),
+          HttpStatus.OK);
     } catch (Exception e) {
       return new ResponseEntity<>(
-              new Result(false, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : null),
-              HttpStatus.INTERNAL_SERVER_ERROR);
+          new Result(
+              false, e.getMessage(), e.getCause() != null ? e.getCause().getMessage() : null),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -248,6 +255,23 @@ public class DocumentActivityController {
         }
       }
 
+      // add to download history
+      User ownerFile = document.getUploader();
+      User downloader = user;
+
+      if (downloadHistoryService
+          .findByDocumentAndOwnerFileAndDownloader(document, ownerFile, downloader)
+          .isEmpty()) {
+        DownloadHistory downloadHistory =
+            DownloadHistory.builder()
+                .downloader(downloader)
+                .downloadedFile(document)
+                .ownerFile(ownerFile)
+                .downloadDate(LocalDateTime.now())
+                .build();
+        downloadHistoryService.addNew(downloadHistory);
+      }
+
       String blobUrl = document.getBlobName();
       String blobName = blobUrl.substring(blobUrl.lastIndexOf('/') + 1);
       String sasUrl = documentStorageClient.generateToken(blobName);
@@ -257,5 +281,59 @@ public class DocumentActivityController {
     } catch (Exception e) {
       throw new RuntimeException("Can not download", e);
     }
+  }
+
+  @GetMapping("/your-downloaded-documents")
+  public String yourDownloadedDocuments(Model model) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    User user = null;
+    if (!(authentication instanceof AnonymousAuthenticationToken)) {
+      String currentUsername = authentication.getName();
+      user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
+      model.addAttribute("username", currentUsername);
+    }
+
+    List<DownloadHistory> downloadHistories = downloadHistoryService.getByDownloader(user);
+
+    model.addAttribute("downloadHistories", downloadHistories);
+    return "your-downloaded-documents";
+  }
+
+  @GetMapping("/who-downloaded-your-documents")
+  public String whoDownloadedYourDocuments(Model model) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    User user = null;
+    if (!(authentication instanceof AnonymousAuthenticationToken)) {
+      String currentUsername = authentication.getName();
+      user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
+      model.addAttribute("username", currentUsername);
+    }
+
+    // Lấy danh sách lịch sử tải và group theo file
+    List<DownloadHistory> downloadHistories = downloadHistoryService.getByOwnerFile(user);
+    Map<Integer, List<DownloadHistory>> groupedByFile =
+        downloadHistories.stream()
+            .collect(Collectors.groupingBy(h -> h.getDownloadedFile().getId()));
+
+    // Tạo danh sách WhoDownloadedYourDoc
+    List<WhoDownloadedYourDoc> whoDownloadedYourDocs =
+        groupedByFile.entrySet().stream()
+            .map(
+                entry -> {
+                  Integer fileId = entry.getKey();
+                  List<DownloadHistory> histories = entry.getValue();
+                  FileMetadata file = histories.get(0).getDownloadedFile();
+                  List<User> downloaders =
+                      histories.stream()
+                          .map(DownloadHistory::getDownloader)
+                          .collect(Collectors.toList());
+                  User owner = histories.get(0).getOwnerFile();
+                  return new WhoDownloadedYourDoc(
+                      fileId, file.getOriginalFileName(), downloaders, owner);
+                })
+            .collect(Collectors.toList());
+
+    model.addAttribute("whoDownloadedYourDocs", whoDownloadedYourDocs);
+    return "who-downloaded-your-documents";
   }
 }
